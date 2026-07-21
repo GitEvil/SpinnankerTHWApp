@@ -33,9 +33,6 @@ Diese Adresse verteilst du (Link, QR-Code, E-Mail).
 Nach dem ersten Öffnen funktioniert die App auch **ohne Internet** (der
 Service Worker speichert sie lokal).
 
-> Hinweis: Die Datei `_config.yml` sorgt dafür, dass die PDFs im Ordner
-> `Spinnanker_offline_resources` **nicht** mit veröffentlicht werden.
-
 ---
 
 ## B) Als einzelne Offline-Datei
@@ -66,18 +63,3 @@ Kein Server, kein Internet nötig.
 Bei Änderungen an den App-Dateien in `sw.js` die Zeile
 `const CACHE = 'spinnanker-traglast-v1';` hochzählen (…-v2, -v3), damit
 installierte Geräte die neue Version laden.
-
----
-
-## Wichtiger Hinweis zu den PDFs / Urheberrecht
-
-Im Repository liegen urheberrechtlich geschützte Spinnanker-/THW-PDFs
-(`Spinnanker_offline_resources`). **Ist das GitHub-Repository öffentlich, sind
-diese Dateien bereits öffentlich einsehbar.** Für die reine App werden sie
-nicht benötigt. Empfehlung:
-
-- Repository **privat** stellen, oder
-- die PDFs aus der Versionsverwaltung entfernen (nur lokal behalten).
-
-Die veröffentlichte Web-App (Weg A) enthält die PDFs dank `_config.yml` ohnehin
-nicht.

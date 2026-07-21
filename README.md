@@ -46,18 +46,38 @@ den im Diagramm abgelesenen ~27 kN.
 Bodenklasse 4, Ein-/Ausdrehmaschine 1400 HTC. Das Ergebnis ersetzt keine
 Ingenieurprüfung im Einzelfall.
 
-## Lokal starten
+## Weitergabe an Anwender
 
-1. Terminal in diesem Ordner öffnen.
-2. `npm start` (startet einen lokalen Webserver).
-3. http://localhost:8000 im Browser öffnen.
+Die App ist rein statisch (HTML/CSS/JS) und funktioniert offline. Für die
+Verteilung an nicht-technische Nutzer gibt es zwei Wege – ausführlich
+beschrieben in **[DISTRIBUTION.md](DISTRIBUTION.md)**:
 
-Die App ist rein statisch (HTML/CSS/JS) und funktioniert offline.
+- **Web-Link (Handy/Tablet):** über GitHub Pages veröffentlichen; Nutzer öffnen
+  den Link und wählen „Zum Startbildschirm hinzufügen“. Als installierbare PWA
+  (Manifest + Service Worker) läuft die App danach auch offline.
+- **Einzelne Offline-Datei:** `npm run build` erzeugt
+  `dist/Spinnanker-Traglast-offline.html` – eine eigenständige Datei mit
+  eingebettetem CSS/JS, die per Doppelklick bzw. im Browser geöffnet wird
+  (kein Server, kein Internet).
 
-## Tests
+## Entwicklung
 
-Die Berechnungslogik ist durch automatisierte Tests abgedeckt:
+| Befehl          | Wirkung                                                        |
+| --------------- | ------------------------------------------------------------- |
+| `npm start`     | Lokalen Webserver starten → http://localhost:8000             |
+| `npm test`      | Rechenlogik testen (`tests/calculation.test.js`)              |
+| `npm run build` | Eigenständige Offline-Datei nach `dist/` erzeugen             |
+| `npm run icons` | App-Icons neu generieren (`icon-*.png`)                       |
 
-```
-npm test
-```
+### Projektstruktur
+
+- `index.html`, `styles.css` – Oberfläche
+- `app.js` – Bedienung/Anzeige (DOM), Service-Worker-Registrierung
+- `calculation.js` – Rechenkern (auch von den Tests genutzt)
+- `manifest.webmanifest`, `sw.js`, `icon.*` – PWA/Installierbarkeit
+- `scripts/` – Build- und Icon-Generator
+- `dist/` – erzeugte Offline-Datei (durch `npm run build`)
+
+Nach Änderungen an den App-Dateien die Cache-Version in `sw.js`
+(`const CACHE = 'spinnanker-traglast-v1'`) hochzählen, damit installierte
+Geräte die neue Fassung laden.

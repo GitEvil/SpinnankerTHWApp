@@ -1,9 +1,7 @@
 # GitHub-Pages-Konfiguration.
-# Diese Dateien/Ordner werden NICHT auf der veröffentlichten Seite ausgeliefert.
-# Damit bleiben insbesondere die urheberrechtlich geschützten Spinnanker-PDFs
-# aus dem öffentlichen Web heraus.
+# Diese Dateien/Ordner werden NICHT auf der veröffentlichten Seite ausgeliefert
+# (nur Entwicklungs-/Hilfsdateien, die die App im Web nicht braucht).
 exclude:
-  - Spinnanker_offline_resources
   - tests
   - scripts
   - node_modules
