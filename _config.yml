@@ -1,0 +1,14 @@
+# GitHub-Pages-Konfiguration.
+# Diese Dateien/Ordner werden NICHT auf der veröffentlichten Seite ausgeliefert.
+# Damit bleiben insbesondere die urheberrechtlich geschützten Spinnanker-PDFs
+# aus dem öffentlichen Web heraus.
+exclude:
+  - Spinnanker_offline_resources
+  - tests
+  - scripts
+  - node_modules
+  - package.json
+  - package-lock.json
+  - README.md
+  - DISTRIBUTION.md
+  - LICENSE

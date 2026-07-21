@@ -164,3 +164,13 @@ form.addEventListener('submit', calculate);
 exampleButton.addEventListener('click', fillExample);
 resetButton.addEventListener('click', resetForm);
 updateFooter();
+
+// Service Worker nur bei echtem Hosting (http/https) registrieren – beim
+// direkten Öffnen der Einzeldatei (file://) gibt es keinen Service Worker.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      /* offline-Funktion optional – Fehler bewusst ignorieren */
+    });
+  });
+}
