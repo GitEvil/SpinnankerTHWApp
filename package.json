@@ -1,0 +1,10 @@
+{
+  "name": "spinnanker-thw-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/calculation.test.js",
+    "start": "python3 -m http.server 8000"
+  }
+}

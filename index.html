@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spinnanker Traglastprüfung</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">THW · Spinnanker Type XII</p>
+          <h1>Traglastprüfung</h1>
+          <p>
+            Stablängen aus Eilgang (EG) und Kraftgang (KG) eintragen – die
+            Mittelwerte und die Bruchlast werden automatisch berechnet. Das
+            Ablesen im Traglastdiagramm entfällt.
+          </p>
+        </div>
+        <aside class="hero-badge">
+          <span class="badge-title">Geltungsbereich</span>
+          <ul>
+            <li>Spinnanker Type XII</li>
+            <li>Mindest-Einbaulänge 2 m</li>
+            <li>Bodenklasse 4</li>
+            <li>Maschine 1400 HTC</li>
+          </ul>
+        </aside>
+      </header>
+
+      <section class="content-grid">
+        <form id="protocolForm" class="panel form-panel">
+          <div class="form-head">
+            <h2>Stablängen [m]</h2>
+            <div class="form-actions">
+              <button type="button" id="exampleButton" class="ghost-button">
+                Beispiel
+              </button>
+              <button type="button" id="resetButton" class="ghost-button">
+                Zurücksetzen
+              </button>
+            </div>
+          </div>
+
+          <p class="table-hint">
+            Je Stab die im Eilgang und Kraftgang eingedrehte Länge eintragen.
+            EG + KG darf die Stablänge von 2 m nicht überschreiten.
+          </p>
+
+          <div class="table-scroll">
+            <table class="rod-table">
+              <thead>
+                <tr>
+                  <th scope="col">Stab</th>
+                  <th scope="col">Eilgang (EG)</th>
+                  <th scope="col">Kraftgang (KG)</th>
+                </tr>
+              </thead>
+              <tbody id="rodRows"></tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">Summe</th>
+                  <td id="sumEG" class="numeric">–</td>
+                  <td id="sumKG" class="numeric">–</td>
+                </tr>
+                <tr>
+                  <th scope="row">Mittelwert</th>
+                  <td id="meanEG" class="numeric strong">–</td>
+                  <td id="meanKG" class="numeric strong">–</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <button type="submit" id="calculateButton" class="primary-button">
+            Bruchlast berechnen
+          </button>
+        </form>
+
+        <section class="panel result-panel" aria-live="polite">
+          <h2>Ergebnis – Bruchlast</h2>
+
+          <div class="result-cards">
+            <div class="result-card vertical">
+              <span class="result-label">Vertikal (V)</span>
+              <span id="verticalValue" class="result-value">–</span>
+              <span class="result-unit">kN</span>
+            </div>
+            <div class="result-card horizontal">
+              <span class="result-label">Horizontal (H)</span>
+              <span id="horizontalValue" class="result-value">–</span>
+              <span class="result-unit">kN</span>
+            </div>
+          </div>
+
+          <p id="resultSummary" class="result-summary">
+            Tragen Sie die Stablängen ein und drücken Sie
+            „Bruchlast berechnen“.
+          </p>
+
+          <ul id="detailList" class="detail-list"></ul>
+
+          <div id="warningBox" class="warning-box" hidden></div>
+
+          <p class="disclaimer">
+            Ergebnis entspricht dem Ablesen im offiziellen Traglastdiagramm
+            (Bild&nbsp;20/24). Nur innerhalb des oben genannten Geltungsbereichs
+            gültig. Ersetzt keine Ingenieurprüfung im Einzelfall.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
