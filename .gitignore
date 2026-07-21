@@ -1,0 +1,5 @@
+# Windows "Mark of the Web" alternate data streams surfaced by WSL
+*:Zone.Identifier
+
+# Node
+node_modules/
