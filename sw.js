@@ -1,6 +1,6 @@
 // Service Worker – macht die App nach dem ersten Laden offline verfügbar.
 // Die Versionsnummer bei jeder Änderung erhöhen, damit Clients aktualisieren.
-const CACHE = 'spinnanker-traglast-v1';
+const CACHE = 'spinnanker-traglast-v1.1';
 const ASSETS = [
   '.',
   'index.html',
