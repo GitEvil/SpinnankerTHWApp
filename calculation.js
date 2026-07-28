@@ -1,6 +1,6 @@
 // Berechnung der Bruchlast (Traglast) für Spinnanker Type XII
 // ----------------------------------------------------------------------------
-// Diese Datei bildet das offizielle Traglastdiagramm (Bild 20 / Bild 24,
+// Diese Datei bildet das offizielle Traglastdiagramm (Bild 20/22/24,
 // "Designwiderstand Spinnanker XII / 1400 HTC") als Formel ab, damit das
 // Ablesen im Koordinatensystem entfällt.
 //
@@ -14,34 +14,31 @@
 // (Last je Meter Stablänge) wurden aus dem Originaldiagramm ausgemessen:
 //   EG-V = 9,0   EG-H = 5,0   KG-V = 24,5   KG-H = 13,6   [kN/m]
 //
-// Eingabekonvention:
-//   Je Stab werden die im Eilgang (EG) und im Kraftgang (KG) eingedrehten
-//   Längen erfasst. Beide sind Abschnitte desselben 2-m-Stabes, daher gilt
-//   je Stab:  EG + KG <= 2 m (Stablänge). Ein kleinerer Wert bedeutet, dass
-//   der Stab nicht vollständig eingedreht werden konnte.
+// Eingabekonvention (laut Handbuch, Abschnitt 4.4/4.5):
+//   Der Stab wird zuerst im Eilgang (EG) eingedreht bis der Eilgang blockiert,
+//   danach im Kraftgang (KG) bis zur Endtiefe. Erfasst wird je Stab:
+//     EG = Tiefe am Ende der Eilgang-Phase
+//     KG = Endtiefe insgesamt (nach dem Kraftgang)
+//   Daher gilt je Stab:  EG ≤ KG ≤ 2 m.
 //
-// Ablesekonstruktion aus der Anleitung (Bild 24):
-//   1. Mittlere EG-Länge auf der EG-Kurve antragen -> Punkt A
+// Ablesekonstruktion aus dem Handbuch (Abschnitt 4.7, Bild 22/24):
+//   1. Auf der EG-Kurve bis zur mittleren EG-Länge gehen           -> Punkt A
 //   2. Von A eine Parallele zur KG-Kurve ziehen
-//   3. Um die zusätzlich im Kraftgang eingedrehte Länge (= MittelKG)
-//      weiterlaufen und die Last ablesen
-//   => Bruchlast = Steigung_EG * MittelEG + Steigung_KG * MittelKG
+//   3. Auf dieser bis zur mittleren KG-Länge weiterlaufen
+//   4. Senkrecht zur Achse -> Designwiderstand ablesen
+//   => Bruchlast = Steigung_EG · MittelEG + Steigung_KG · (MittelKG − MittelEG)
+//
+// Das Ergebnis wird konservativ auf ganze kN abgerundet – das entspricht dem
+// Ablesen im Diagramm und reproduziert die Handbuch-Beispiele exakt
+// (Beispiel 1: 36 kN, Beispiel 2: 27 kN).
 
 export const CURVE_SLOPES = {
   vertical: { eg: 9.0, kg: 24.5 }, // V: vertikale Zugrichtung [kN/m]
   horizontal: { eg: 5.0, kg: 13.6 }, // H: horizontale Zugrichtung [kN/m]
 };
 
-export const ROD_LENGTH_M = 2.0; // Stablänge / Mindest-Einbaulänge
+export const ROD_LENGTH_M = 2.0; // Stablänge / max. Einbautiefe
 export const EXPECTED_RODS = 12; // Stäbe je Ankerplatte
-
-// Prüft für einen Stab, ob EG + KG die Stablänge überschreitet.
-export function rodExceedsLength(egValue, kgValue) {
-  const e = parseLength(egValue);
-  const k = parseLength(kgValue);
-  if (!Number.isFinite(e) || !Number.isFinite(k)) return false;
-  return e + k > ROD_LENGTH_M + 1e-9;
-}
 
 // Wandelt eine Eingabe (Zahl oder Text mit Komma/Punkt) in eine Zahl um.
 export function parseLength(value) {
@@ -51,6 +48,15 @@ export function parseLength(value) {
   if (cleaned === '') return NaN;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : NaN;
+}
+
+// Prüft für einen Stab, ob KG kleiner als EG ist (physikalisch unplausibel:
+// der Kraftgang dreht den Stab tiefer, daher muss KG ≥ EG sein).
+export function rodKgBelowEg(egValue, kgValue) {
+  const e = parseLength(egValue);
+  const k = parseLength(kgValue);
+  if (!Number.isFinite(e) || !Number.isFinite(k)) return false;
+  return k + 1e-9 < e;
 }
 
 // Summe, Mittelwert und Anzahl der ausgefüllten Werte einer Reihe.
@@ -64,6 +70,50 @@ export function summarise(values) {
   };
 }
 
+// Bruchlast aus den beiden Mittelwerten (in m) berechnen. Konservativ auf ganze
+// kN abgerundet (entspricht dem Ablesen im Diagramm).
+function resistanceFromMeans(meanEG, meanKG) {
+  const kgDelta = Math.max(meanKG - meanEG, 0);
+  const loadFor = (slopes) => slopes.eg * meanEG + slopes.kg * kgDelta;
+  const verticalKN = Math.floor(loadFor(CURVE_SLOPES.vertical));
+  const horizontalKN = Math.floor(loadFor(CURVE_SLOPES.horizontal));
+  return { verticalKN, horizontalKN, governingKN: Math.min(verticalKN, horizontalKN) };
+}
+
+// Schnellmodus: Bruchlast direkt aus den beiden Mittelwerten (ohne Einzelstäbe).
+export function computeBruchlastFromMeans({ meanEG, meanKG } = {}) {
+  const e = parseLength(meanEG);
+  const k = parseLength(meanKG);
+  const eOk = Number.isFinite(e);
+  const kOk = Number.isFinite(k);
+  const hasInput = eOk || kOk;
+  const complete = eOk && kOk;
+
+  const warnings = [];
+  if ([e, k].some((n) => Number.isFinite(n) && (n < 0 || n > ROD_LENGTH_M))) {
+    warnings.push(
+      `Mittelwerte müssen zwischen 0 und ${ROD_LENGTH_M.toFixed(1)} m liegen.`,
+    );
+  }
+  if (complete && k + 1e-9 < e) {
+    warnings.push(
+      'Mittelwert KG muss ≥ Mittelwert EG sein '
+        + '(Kraftgang dreht tiefer als Eilgang).',
+    );
+  }
+
+  const result = resistanceFromMeans(eOk ? e : 0, kOk ? k : 0);
+  return {
+    meanEG: eOk ? Number(e.toFixed(3)) : 0,
+    meanKG: kOk ? Number(k.toFixed(3)) : 0,
+    ...result,
+    warnings,
+    hasInput,
+    incomplete: hasInput && !complete,
+    fromMeans: true,
+  };
+}
+
 // Kernberechnung: aus den 12 EG- und 12 KG-Stablängen die Bruchlast bestimmen.
 export function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
   const eg = summarise(egLengths);
@@ -71,10 +121,7 @@ export function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
 
   const meanEG = eg.mean;
   const meanKG = kg.mean;
-
-  const loadFor = (slopes) => slopes.eg * meanEG + slopes.kg * meanKG;
-  const verticalKN = loadFor(CURVE_SLOPES.vertical);
-  const horizontalKN = loadFor(CURVE_SLOPES.horizontal);
+  const { verticalKN, horizontalKN, governingKN } = resistanceFromMeans(meanEG, meanKG);
 
   const warnings = [];
   const allLengths = [...egLengths, ...kgLengths]
@@ -87,20 +134,16 @@ export function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
     );
   }
 
-  // Je Stab darf EG + KG die Stablänge (2 m) nicht überschreiten.
+  // Je Stab muss KG ≥ EG sein (Kraftgang dreht tiefer als Eilgang).
   const rodCount = Math.max(egLengths.length, kgLengths.length);
-  const overlong = [];
+  const kgBelowEgRods = [];
   for (let i = 0; i < rodCount; i += 1) {
-    const e = parseLength(egLengths[i]);
-    const k = parseLength(kgLengths[i]);
-    if (Number.isFinite(e) && Number.isFinite(k) && e + k > ROD_LENGTH_M + 1e-9) {
-      overlong.push(i + 1);
-    }
+    if (rodKgBelowEg(egLengths[i], kgLengths[i])) kgBelowEgRods.push(i + 1);
   }
-  if (overlong.length) {
+  if (kgBelowEgRods.length) {
     warnings.push(
-      `EG + KG darf je Stab ${ROD_LENGTH_M.toFixed(1)} m nicht überschreiten `
-        + `(betroffen: Stab ${overlong.join(', ')}).`,
+      `KG muss je Stab ≥ EG sein (Kraftgang dreht tiefer als Eilgang). `
+        + `Bitte prüfen: Stab ${kgBelowEgRods.join(', ')}.`,
     );
   }
 
@@ -114,7 +157,6 @@ export function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
     );
   }
 
-  const round1 = (n) => Number(n.toFixed(1));
   return {
     meanEG: Number(meanEG.toFixed(3)),
     meanKG: Number(meanKG.toFixed(3)),
@@ -122,11 +164,11 @@ export function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
     sumKG: Number(kg.sum.toFixed(3)),
     countEG: eg.count,
     countKG: kg.count,
-    verticalKN: round1(verticalKN),
-    horizontalKN: round1(horizontalKN),
+    verticalKN,
+    horizontalKN,
     // Für eine schräge Abspannung ist der kleinere (horizontale) Wert konservativ.
-    governingKN: round1(Math.min(verticalKN, horizontalKN)),
-    overlongRods: overlong,
+    governingKN,
+    kgBelowEgRods,
     warnings,
     hasInput: eg.count > 0 || kg.count > 0,
   };

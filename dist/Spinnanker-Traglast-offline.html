@@ -109,6 +109,77 @@ body {
   align-items: start;
 }
 
+.mode-toggle {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  margin-bottom: 1rem;
+  background: #eef2f8;
+  border-radius: 999px;
+}
+
+.mode-btn {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.mode-btn.is-active {
+  background: white;
+  color: var(--thw-dark);
+  box-shadow: 0 2px 8px rgba(0, 42, 102, 0.12);
+}
+
+.means-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.means-grid label {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  font-weight: 700;
+  color: var(--thw-dark);
+}
+
+.means-grid input {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem 0.7rem;
+  font-size: 16px;
+  text-align: right;
+}
+
+.means-grid input:focus {
+  outline: 2px solid var(--thw);
+  border-color: var(--thw);
+}
+
+.means-grid input.invalid {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.form-footer .primary-button {
+  margin-top: 0;
+  flex: 1;
+}
+
 .form-head {
   display: flex;
   align-items: center;
@@ -198,13 +269,20 @@ body {
   width: 3rem;
 }
 
+.col-unit {
+  color: #94a3b8;
+  font-weight: 500;
+  margin-left: 0.3rem;
+}
+
 .rod-table input {
   width: 100%;
   max-width: 8rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.55rem 0.5rem;
-  font: inherit;
+  padding: 0.6rem 0.5rem;
+  /* 16px verhindert das automatische Zoomen beim Fokus auf iOS. */
+  font-size: 16px;
   text-align: right;
 }
 
@@ -352,51 +430,92 @@ body {
 
       <section class="content-grid">
         <form id="protocolForm" class="panel form-panel">
-          <div class="form-head">
-            <h2>Stablängen [m]</h2>
-            <div class="form-actions">
-              <button type="button" id="exampleButton" class="ghost-button">
-                Beispiel
-              </button>
-              <button type="button" id="resetButton" class="ghost-button">
-                Zurücksetzen
-              </button>
+          <div class="mode-toggle" role="group" aria-label="Eingabemodus">
+            <button type="button" id="modeTable" class="mode-btn is-active" aria-pressed="true">
+              Einzelwerte · 12 Stäbe
+            </button>
+            <button type="button" id="modeMeans" class="mode-btn" aria-pressed="false">
+              Schnell · Mittelwerte
+            </button>
+          </div>
+
+          <section id="tableMode">
+            <div class="form-head">
+              <h2>Stablängen [m]</h2>
+              <div class="form-actions">
+                <button type="button" id="fillKgButton" class="ghost-button">
+                  KG-Rest = 2,0
+                </button>
+                <button type="button" id="exampleButton" class="ghost-button">
+                  Beispiel
+                </button>
+              </div>
             </div>
+
+            <p class="table-hint">
+              <strong>EG</strong> = Tiefe am Ende des Eilgangs,
+              <strong>KG</strong> = Endtiefe nach dem Kraftgang. Je Stab gilt
+              0 ≤ EG ≤ KG ≤ 2 m. Mit Enter/Return springen Sie zum nächsten Feld.
+            </p>
+
+            <div class="table-scroll">
+              <table class="rod-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Stab</th>
+                    <th scope="col">Eilgang (EG)<span class="col-unit">m</span></th>
+                    <th scope="col">Kraftgang (KG)<span class="col-unit">m</span></th>
+                  </tr>
+                </thead>
+                <tbody id="rodRows"></tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row">Summe</th>
+                    <td id="sumEG" class="numeric">–</td>
+                    <td id="sumKG" class="numeric">–</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Mittelwert</th>
+                    <td id="meanEG" class="numeric strong">–</td>
+                    <td id="meanKG" class="numeric strong">–</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+
+          <section id="meansMode" hidden>
+            <div class="form-head">
+              <h2>Mittelwerte [m]</h2>
+            </div>
+            <p class="table-hint">
+              Mittlere Stablängen direkt eintragen – für eine schnelle
+              Kontrolle ohne alle 12 Einzelwerte. Es gilt 0 ≤ EG ≤ KG ≤ 2 m.
+            </p>
+            <div class="means-grid">
+              <label>
+                Mittelwert EG<span class="col-unit">m</span>
+                <input type="text" inputmode="decimal" id="meanEgInput"
+                  enterkeyhint="next" placeholder="0,00"
+                  aria-label="Mittelwert Eilgang in Metern" />
+              </label>
+              <label>
+                Mittelwert KG<span class="col-unit">m</span>
+                <input type="text" inputmode="decimal" id="meanKgInput"
+                  enterkeyhint="done" placeholder="2,00"
+                  aria-label="Mittelwert Kraftgang in Metern" />
+              </label>
+            </div>
+          </section>
+
+          <div class="form-footer">
+            <button type="submit" id="calculateButton" class="primary-button">
+              Bruchlast berechnen
+            </button>
+            <button type="button" id="resetButton" class="ghost-button">
+              Zurücksetzen
+            </button>
           </div>
-
-          <p class="table-hint">
-            Je Stab die im Eilgang und Kraftgang eingedrehte Länge eintragen.
-            EG + KG darf die Stablänge von 2 m nicht überschreiten.
-          </p>
-
-          <div class="table-scroll">
-            <table class="rod-table">
-              <thead>
-                <tr>
-                  <th scope="col">Stab</th>
-                  <th scope="col">Eilgang (EG)</th>
-                  <th scope="col">Kraftgang (KG)</th>
-                </tr>
-              </thead>
-              <tbody id="rodRows"></tbody>
-              <tfoot>
-                <tr>
-                  <th scope="row">Summe</th>
-                  <td id="sumEG" class="numeric">–</td>
-                  <td id="sumKG" class="numeric">–</td>
-                </tr>
-                <tr>
-                  <th scope="row">Mittelwert</th>
-                  <td id="meanEG" class="numeric strong">–</td>
-                  <td id="meanKG" class="numeric strong">–</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <button type="submit" id="calculateButton" class="primary-button">
-            Bruchlast berechnen
-          </button>
         </form>
 
         <section class="panel result-panel" aria-live="polite">
@@ -437,7 +556,7 @@ body {
 (() => {
 // Berechnung der Bruchlast (Traglast) für Spinnanker Type XII
 // ----------------------------------------------------------------------------
-// Diese Datei bildet das offizielle Traglastdiagramm (Bild 20 / Bild 24,
+// Diese Datei bildet das offizielle Traglastdiagramm (Bild 20/22/24,
 // "Designwiderstand Spinnanker XII / 1400 HTC") als Formel ab, damit das
 // Ablesen im Koordinatensystem entfällt.
 //
@@ -451,34 +570,31 @@ body {
 // (Last je Meter Stablänge) wurden aus dem Originaldiagramm ausgemessen:
 //   EG-V = 9,0   EG-H = 5,0   KG-V = 24,5   KG-H = 13,6   [kN/m]
 //
-// Eingabekonvention:
-//   Je Stab werden die im Eilgang (EG) und im Kraftgang (KG) eingedrehten
-//   Längen erfasst. Beide sind Abschnitte desselben 2-m-Stabes, daher gilt
-//   je Stab:  EG + KG <= 2 m (Stablänge). Ein kleinerer Wert bedeutet, dass
-//   der Stab nicht vollständig eingedreht werden konnte.
+// Eingabekonvention (laut Handbuch, Abschnitt 4.4/4.5):
+//   Der Stab wird zuerst im Eilgang (EG) eingedreht bis der Eilgang blockiert,
+//   danach im Kraftgang (KG) bis zur Endtiefe. Erfasst wird je Stab:
+//     EG = Tiefe am Ende der Eilgang-Phase
+//     KG = Endtiefe insgesamt (nach dem Kraftgang)
+//   Daher gilt je Stab:  EG ≤ KG ≤ 2 m.
 //
-// Ablesekonstruktion aus der Anleitung (Bild 24):
-//   1. Mittlere EG-Länge auf der EG-Kurve antragen -> Punkt A
+// Ablesekonstruktion aus dem Handbuch (Abschnitt 4.7, Bild 22/24):
+//   1. Auf der EG-Kurve bis zur mittleren EG-Länge gehen           -> Punkt A
 //   2. Von A eine Parallele zur KG-Kurve ziehen
-//   3. Um die zusätzlich im Kraftgang eingedrehte Länge (= MittelKG)
-//      weiterlaufen und die Last ablesen
-//   => Bruchlast = Steigung_EG * MittelEG + Steigung_KG * MittelKG
+//   3. Auf dieser bis zur mittleren KG-Länge weiterlaufen
+//   4. Senkrecht zur Achse -> Designwiderstand ablesen
+//   => Bruchlast = Steigung_EG · MittelEG + Steigung_KG · (MittelKG − MittelEG)
+//
+// Das Ergebnis wird konservativ auf ganze kN abgerundet – das entspricht dem
+// Ablesen im Diagramm und reproduziert die Handbuch-Beispiele exakt
+// (Beispiel 1: 36 kN, Beispiel 2: 27 kN).
 
 const CURVE_SLOPES = {
   vertical: { eg: 9.0, kg: 24.5 }, // V: vertikale Zugrichtung [kN/m]
   horizontal: { eg: 5.0, kg: 13.6 }, // H: horizontale Zugrichtung [kN/m]
 };
 
-const ROD_LENGTH_M = 2.0; // Stablänge / Mindest-Einbaulänge
+const ROD_LENGTH_M = 2.0; // Stablänge / max. Einbautiefe
 const EXPECTED_RODS = 12; // Stäbe je Ankerplatte
-
-// Prüft für einen Stab, ob EG + KG die Stablänge überschreitet.
-function rodExceedsLength(egValue, kgValue) {
-  const e = parseLength(egValue);
-  const k = parseLength(kgValue);
-  if (!Number.isFinite(e) || !Number.isFinite(k)) return false;
-  return e + k > ROD_LENGTH_M + 1e-9;
-}
 
 // Wandelt eine Eingabe (Zahl oder Text mit Komma/Punkt) in eine Zahl um.
 function parseLength(value) {
@@ -488,6 +604,15 @@ function parseLength(value) {
   if (cleaned === '') return NaN;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : NaN;
+}
+
+// Prüft für einen Stab, ob KG kleiner als EG ist (physikalisch unplausibel:
+// der Kraftgang dreht den Stab tiefer, daher muss KG ≥ EG sein).
+function rodKgBelowEg(egValue, kgValue) {
+  const e = parseLength(egValue);
+  const k = parseLength(kgValue);
+  if (!Number.isFinite(e) || !Number.isFinite(k)) return false;
+  return k + 1e-9 < e;
 }
 
 // Summe, Mittelwert und Anzahl der ausgefüllten Werte einer Reihe.
@@ -501,6 +626,50 @@ function summarise(values) {
   };
 }
 
+// Bruchlast aus den beiden Mittelwerten (in m) berechnen. Konservativ auf ganze
+// kN abgerundet (entspricht dem Ablesen im Diagramm).
+function resistanceFromMeans(meanEG, meanKG) {
+  const kgDelta = Math.max(meanKG - meanEG, 0);
+  const loadFor = (slopes) => slopes.eg * meanEG + slopes.kg * kgDelta;
+  const verticalKN = Math.floor(loadFor(CURVE_SLOPES.vertical));
+  const horizontalKN = Math.floor(loadFor(CURVE_SLOPES.horizontal));
+  return { verticalKN, horizontalKN, governingKN: Math.min(verticalKN, horizontalKN) };
+}
+
+// Schnellmodus: Bruchlast direkt aus den beiden Mittelwerten (ohne Einzelstäbe).
+function computeBruchlastFromMeans({ meanEG, meanKG } = {}) {
+  const e = parseLength(meanEG);
+  const k = parseLength(meanKG);
+  const eOk = Number.isFinite(e);
+  const kOk = Number.isFinite(k);
+  const hasInput = eOk || kOk;
+  const complete = eOk && kOk;
+
+  const warnings = [];
+  if ([e, k].some((n) => Number.isFinite(n) && (n < 0 || n > ROD_LENGTH_M))) {
+    warnings.push(
+      `Mittelwerte müssen zwischen 0 und ${ROD_LENGTH_M.toFixed(1)} m liegen.`,
+    );
+  }
+  if (complete && k + 1e-9 < e) {
+    warnings.push(
+      'Mittelwert KG muss ≥ Mittelwert EG sein '
+        + '(Kraftgang dreht tiefer als Eilgang).',
+    );
+  }
+
+  const result = resistanceFromMeans(eOk ? e : 0, kOk ? k : 0);
+  return {
+    meanEG: eOk ? Number(e.toFixed(3)) : 0,
+    meanKG: kOk ? Number(k.toFixed(3)) : 0,
+    ...result,
+    warnings,
+    hasInput,
+    incomplete: hasInput && !complete,
+    fromMeans: true,
+  };
+}
+
 // Kernberechnung: aus den 12 EG- und 12 KG-Stablängen die Bruchlast bestimmen.
 function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
   const eg = summarise(egLengths);
@@ -508,10 +677,7 @@ function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
 
   const meanEG = eg.mean;
   const meanKG = kg.mean;
-
-  const loadFor = (slopes) => slopes.eg * meanEG + slopes.kg * meanKG;
-  const verticalKN = loadFor(CURVE_SLOPES.vertical);
-  const horizontalKN = loadFor(CURVE_SLOPES.horizontal);
+  const { verticalKN, horizontalKN, governingKN } = resistanceFromMeans(meanEG, meanKG);
 
   const warnings = [];
   const allLengths = [...egLengths, ...kgLengths]
@@ -524,20 +690,16 @@ function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
     );
   }
 
-  // Je Stab darf EG + KG die Stablänge (2 m) nicht überschreiten.
+  // Je Stab muss KG ≥ EG sein (Kraftgang dreht tiefer als Eilgang).
   const rodCount = Math.max(egLengths.length, kgLengths.length);
-  const overlong = [];
+  const kgBelowEgRods = [];
   for (let i = 0; i < rodCount; i += 1) {
-    const e = parseLength(egLengths[i]);
-    const k = parseLength(kgLengths[i]);
-    if (Number.isFinite(e) && Number.isFinite(k) && e + k > ROD_LENGTH_M + 1e-9) {
-      overlong.push(i + 1);
-    }
+    if (rodKgBelowEg(egLengths[i], kgLengths[i])) kgBelowEgRods.push(i + 1);
   }
-  if (overlong.length) {
+  if (kgBelowEgRods.length) {
     warnings.push(
-      `EG + KG darf je Stab ${ROD_LENGTH_M.toFixed(1)} m nicht überschreiten `
-        + `(betroffen: Stab ${overlong.join(', ')}).`,
+      `KG muss je Stab ≥ EG sein (Kraftgang dreht tiefer als Eilgang). `
+        + `Bitte prüfen: Stab ${kgBelowEgRods.join(', ')}.`,
     );
   }
 
@@ -551,7 +713,6 @@ function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
     );
   }
 
-  const round1 = (n) => Number(n.toFixed(1));
   return {
     meanEG: Number(meanEG.toFixed(3)),
     meanKG: Number(meanKG.toFixed(3)),
@@ -559,11 +720,11 @@ function computeBruchlast({ egLengths = [], kgLengths = [] } = {}) {
     sumKG: Number(kg.sum.toFixed(3)),
     countEG: eg.count,
     countKG: kg.count,
-    verticalKN: round1(verticalKN),
-    horizontalKN: round1(horizontalKN),
+    verticalKN,
+    horizontalKN,
     // Für eine schräge Abspannung ist der kleinere (horizontale) Wert konservativ.
-    governingKN: round1(Math.min(verticalKN, horizontalKN)),
-    overlongRods: overlong,
+    governingKN,
+    kgBelowEgRods,
     warnings,
     hasInput: eg.count > 0 || kg.count > 0,
   };
@@ -582,12 +743,20 @@ const detailList = document.querySelector('#detailList');
 const warningBox = document.querySelector('#warningBox');
 const exampleButton = document.querySelector('#exampleButton');
 const resetButton = document.querySelector('#resetButton');
+const fillKgButton = document.querySelector('#fillKgButton');
+const modeTableBtn = document.querySelector('#modeTable');
+const modeMeansBtn = document.querySelector('#modeMeans');
+const tableMode = document.querySelector('#tableMode');
+const meansMode = document.querySelector('#meansMode');
+const meanEgInput = document.querySelector('#meanEgInput');
+const meanKgInput = document.querySelector('#meanKgInput');
 
-// Beispiel aus der Anleitung (Bild 24): Mittel EG 1,36 m, Gesamtlänge 2,00 m.
-// EG- und KG-Abschnitte ergänzen sich hier je Stab zur vollen Stablänge (2 m),
-// d. h. Mittel KG = 0,64 m. Ergebnis: 27,9 kN vertikal.
-const EXAMPLE_EG = [1.30, 1.42, 1.35, 1.40, 1.28, 1.45, 1.33, 1.38, 1.36, 1.30, 1.44, 1.31];
-const EXAMPLE_KG = EXAMPLE_EG.map((eg) => Number((ROD_LENGTH_M - eg).toFixed(2)));
+let currentMode = 'table'; // 'table' | 'means'
+
+// Beispiel 1 aus dem Handbuch (Bild 21/22): Mittel EG 0,60 m, Mittel KG 1,86 m
+// -> vertikaler Designwiderstand 36 kN. KG ist die Endtiefe (nach Kraftgang).
+const EXAMPLE_EG = [0.6, 0.75, 0.6, 0.55, 0.6, 0.52, 0.6, 0.7, 0.8, 0.6, 0.7, 0.2];
+const EXAMPLE_KG = [2.0, 2.0, 1.9, 1.7, 1.8, 1.6, 1.8, 1.9, 2.0, 1.6, 2.0, 2.0];
 
 function fmt(value, digits = 2) {
   return value.toLocaleString('de-DE', {
@@ -596,7 +765,7 @@ function fmt(value, digits = 2) {
   });
 }
 
-// Baut die 12 Eingabezeilen (je Stab EG + KG) auf.
+// Baut die 12 Eingabezeilen (je Stab EG- und KG-Tiefe) auf.
 function buildRows() {
   const fragment = document.createDocumentFragment();
   for (let i = 1; i <= EXPECTED_RODS; i += 1) {
@@ -604,19 +773,24 @@ function buildRows() {
     tr.innerHTML = `
       <th scope="row">${i}</th>
       <td>
-        <input type="text" inputmode="decimal" class="eg-input"
+        <input type="text" inputmode="decimal" enterkeyhint="next" class="eg-input"
           data-index="${i}" aria-label="Stab ${i} Eilgang [m]"
           placeholder="0,00" />
       </td>
       <td>
-        <input type="text" inputmode="decimal" class="kg-input"
+        <input type="text" inputmode="decimal" enterkeyhint="next" class="kg-input"
           data-index="${i}" aria-label="Stab ${i} Kraftgang [m]"
-          placeholder="0,00" />
+          placeholder="2,00" />
       </td>
     `;
     fragment.appendChild(tr);
   }
   rodRows.appendChild(fragment);
+}
+
+function allInputs() {
+  // Dokumentreihenfolge: Stab1-EG, Stab1-KG, Stab2-EG, … – ideal fürs Tabben.
+  return Array.from(document.querySelectorAll('.eg-input, .kg-input'));
 }
 
 function readColumn(selector) {
@@ -630,6 +804,67 @@ function readInputs() {
   };
 }
 
+function readMeans() {
+  return { meanEG: meanEgInput.value, meanKG: meanKgInput.value };
+}
+
+// Zwischen Tabellen- und Schnellmodus umschalten.
+function setMode(mode) {
+  currentMode = mode;
+  const isTable = mode === 'table';
+  tableMode.hidden = !isTable;
+  meansMode.hidden = isTable;
+  modeTableBtn.classList.toggle('is-active', isTable);
+  modeMeansBtn.classList.toggle('is-active', !isTable);
+  modeTableBtn.setAttribute('aria-pressed', String(isTable));
+  modeMeansBtn.setAttribute('aria-pressed', String(!isTable));
+  clearResult();
+  if (!isTable) meanEgInput.focus();
+}
+
+// Live-Prüfung der beiden Mittelwert-Felder (Bereich 0..2 m, KG ≥ EG).
+function validateMeans() {
+  const outOfRange = (el) => {
+    const n = parseLength(el.value);
+    return el.value.trim() !== '' && (!Number.isFinite(n) || n < 0 || n > ROD_LENGTH_M);
+  };
+  const kgBelow = rodKgBelowEg(meanEgInput.value, meanKgInput.value);
+  meanEgInput.classList.toggle('invalid', outOfRange(meanEgInput) || kgBelow);
+  meanKgInput.classList.toggle('invalid', outOfRange(meanKgInput) || kgBelow);
+}
+
+// Enter/Return springt zum nächsten Feld – schnellere Eingabe am Tablet/Handy.
+function handleEnter(event) {
+  if (event.key !== 'Enter') return;
+  const target = event.target;
+
+  // Schnellmodus: EG -> KG -> berechnen.
+  if (target === meanEgInput) {
+    event.preventDefault();
+    meanKgInput.focus();
+    meanKgInput.select();
+    return;
+  }
+  if (target === meanKgInput) {
+    event.preventDefault();
+    form.requestSubmit();
+    return;
+  }
+
+  // Tabellenmodus: Feld für Feld weiterspringen, am Ende berechnen.
+  if (!target.classList.contains('eg-input') && !target.classList.contains('kg-input')) return;
+  event.preventDefault();
+  const inputs = allInputs();
+  const idx = inputs.indexOf(target);
+  const next = inputs[idx + 1];
+  if (next) {
+    next.focus();
+    next.select();
+  } else {
+    form.requestSubmit();
+  }
+}
+
 // Aktualisiert live Summe und Mittelwert unter der Tabelle.
 function updateFooter() {
   const { egLengths, kgLengths } = readInputs();
@@ -640,7 +875,7 @@ function updateFooter() {
   meanEGEl.textContent = eg.count ? `${fmt(eg.mean)} m` : '–';
   meanKGEl.textContent = kg.count ? `${fmt(kg.mean)} m` : '–';
 
-  // Ungültige Werte direkt markieren (Bereich 0..2 m sowie EG + KG ≤ 2 m).
+  // Ungültige Werte markieren: Bereich 0..2 m sowie KG ≥ EG je Stab.
   const egInputs = document.querySelectorAll('.eg-input');
   const kgInputs = document.querySelectorAll('.kg-input');
   const outOfRange = (el) => {
@@ -649,29 +884,33 @@ function updateFooter() {
   };
   egInputs.forEach((egEl, i) => {
     const kgEl = kgInputs[i];
-    const pairOverlong = rodExceedsLength(egEl.value, kgEl.value);
-    egEl.classList.toggle('invalid', outOfRange(egEl) || pairOverlong);
-    kgEl.classList.toggle('invalid', outOfRange(kgEl) || pairOverlong);
+    const kgBelow = rodKgBelowEg(egEl.value, kgEl.value);
+    egEl.classList.toggle('invalid', outOfRange(egEl) || kgBelow);
+    kgEl.classList.toggle('invalid', outOfRange(kgEl) || kgBelow);
   });
 }
 
 function renderResult(result) {
-  verticalValue.textContent = fmt(result.verticalKN, 1);
-  horizontalValue.textContent = fmt(result.horizontalKN, 1);
+  verticalValue.textContent = String(result.verticalKN);
+  horizontalValue.textContent = String(result.horizontalKN);
 
   resultSummary.textContent =
     `Bei einer mittleren Stablänge von ${fmt(result.meanEG)} m (EG) und `
     + `${fmt(result.meanKG)} m (KG) beträgt die Bruchlast `
-    + `${fmt(result.verticalKN, 1)} kN vertikal bzw. `
-    + `${fmt(result.horizontalKN, 1)} kN horizontal.`;
+    + `${result.verticalKN} kN vertikal bzw. `
+    + `${result.horizontalKN} kN horizontal.`;
 
-  detailList.innerHTML = `
-    <li>Mittelwert EG: <strong>${fmt(result.meanEG)} m</strong>
-      (Summe ${fmt(result.sumEG)} m / ${result.countEG} Stäbe)</li>
-    <li>Mittelwert KG: <strong>${fmt(result.meanKG)} m</strong>
-      (Summe ${fmt(result.sumKG)} m / ${result.countKG} Stäbe)</li>
-    <li>Maßgebend (konservativ): <strong>${fmt(result.governingKN, 1)} kN</strong></li>
-  `;
+  const meanRows = result.fromMeans
+    ? `
+      <li>Mittelwert EG: <strong>${fmt(result.meanEG)} m</strong></li>
+      <li>Mittelwert KG: <strong>${fmt(result.meanKG)} m</strong></li>`
+    : `
+      <li>Mittelwert EG: <strong>${fmt(result.meanEG)} m</strong>
+        (Summe ${fmt(result.sumEG)} m / ${result.countEG} Stäbe)</li>
+      <li>Mittelwert KG: <strong>${fmt(result.meanKG)} m</strong>
+        (Summe ${fmt(result.sumKG)} m / ${result.countKG} Stäbe)</li>`;
+  detailList.innerHTML = `${meanRows}
+    <li>Maßgebend (konservativ): <strong>${result.governingKN} kN</strong></li>`;
 
   if (result.warnings.length) {
     warningBox.hidden = false;
@@ -684,15 +923,45 @@ function renderResult(result) {
   }
 }
 
+function clearResult() {
+  verticalValue.textContent = '–';
+  horizontalValue.textContent = '–';
+  detailList.innerHTML = '';
+  warningBox.hidden = true;
+  warningBox.innerHTML = '';
+  resultSummary.textContent =
+    'Werte eintragen und „Bruchlast berechnen“ drücken.';
+}
+
 function calculate(event) {
   if (event) event.preventDefault();
-  const result = computeBruchlast(readInputs());
+  const result = currentMode === 'means'
+    ? computeBruchlastFromMeans(readMeans())
+    : computeBruchlast(readInputs());
+
   if (!result.hasInput) {
-    resultSummary.textContent =
-      'Bitte zuerst mindestens eine Stablänge eintragen.';
+    clearResult();
+    resultSummary.textContent = currentMode === 'means'
+      ? 'Bitte die Mittelwerte für EG und KG eintragen.'
+      : 'Bitte zuerst mindestens eine Stablänge eintragen.';
+    return;
+  }
+  if (result.incomplete) {
+    clearResult();
+    resultSummary.textContent = 'Bitte beide Mittelwerte (EG und KG) eintragen.';
     return;
   }
   renderResult(result);
+}
+
+// Leere KG-Felder mit der vollen Stablänge (2,0 m) füllen. Häufigster Fall:
+// der Stab wurde im Kraftgang bis zur vollen Tiefe eingedreht. Bereits
+// eingetragene Werte bleiben unangetastet.
+function fillKgRemaining() {
+  document.querySelectorAll('.kg-input').forEach((el) => {
+    if (el.value.trim() === '') el.value = fmt(ROD_LENGTH_M);
+  });
+  updateFooter();
 }
 
 function fillExample() {
@@ -711,20 +980,26 @@ function resetForm() {
     el.value = '';
     el.classList.remove('invalid');
   });
+  meanEgInput.value = '';
+  meanKgInput.value = '';
+  meanEgInput.classList.remove('invalid');
+  meanKgInput.classList.remove('invalid');
   updateFooter();
-  verticalValue.textContent = '–';
-  horizontalValue.textContent = '–';
-  detailList.innerHTML = '';
-  warningBox.hidden = true;
-  resultSummary.textContent =
-    'Tragen Sie die Stablängen ein und drücken Sie „Bruchlast berechnen“.';
+  clearResult();
 }
 
 buildRows();
-form.addEventListener('input', updateFooter);
+form.addEventListener('input', () => {
+  updateFooter();
+  validateMeans();
+});
+form.addEventListener('keydown', handleEnter);
 form.addEventListener('submit', calculate);
 exampleButton.addEventListener('click', fillExample);
 resetButton.addEventListener('click', resetForm);
+fillKgButton.addEventListener('click', fillKgRemaining);
+modeTableBtn.addEventListener('click', () => setMode('table'));
+modeMeansBtn.addEventListener('click', () => setMode('means'));
 updateFooter();
 
 // Service Worker nur bei echtem Hosting (http/https) registrieren – beim

@@ -91,6 +91,77 @@ body {
   align-items: start;
 }
 
+.mode-toggle {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  margin-bottom: 1rem;
+  background: #eef2f8;
+  border-radius: 999px;
+}
+
+.mode-btn {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.mode-btn.is-active {
+  background: white;
+  color: var(--thw-dark);
+  box-shadow: 0 2px 8px rgba(0, 42, 102, 0.12);
+}
+
+.means-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.means-grid label {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  font-weight: 700;
+  color: var(--thw-dark);
+}
+
+.means-grid input {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem 0.7rem;
+  font-size: 16px;
+  text-align: right;
+}
+
+.means-grid input:focus {
+  outline: 2px solid var(--thw);
+  border-color: var(--thw);
+}
+
+.means-grid input.invalid {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.form-footer .primary-button {
+  margin-top: 0;
+  flex: 1;
+}
+
 .form-head {
   display: flex;
   align-items: center;
@@ -180,13 +251,20 @@ body {
   width: 3rem;
 }
 
+.col-unit {
+  color: #94a3b8;
+  font-weight: 500;
+  margin-left: 0.3rem;
+}
+
 .rod-table input {
   width: 100%;
   max-width: 8rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.55rem 0.5rem;
-  font: inherit;
+  padding: 0.6rem 0.5rem;
+  /* 16px verhindert das automatische Zoomen beim Fokus auf iOS. */
+  font-size: 16px;
   text-align: right;
 }
 

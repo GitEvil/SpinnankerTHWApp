@@ -39,51 +39,92 @@
 
       <section class="content-grid">
         <form id="protocolForm" class="panel form-panel">
-          <div class="form-head">
-            <h2>Stablängen [m]</h2>
-            <div class="form-actions">
-              <button type="button" id="exampleButton" class="ghost-button">
-                Beispiel
-              </button>
-              <button type="button" id="resetButton" class="ghost-button">
-                Zurücksetzen
-              </button>
+          <div class="mode-toggle" role="group" aria-label="Eingabemodus">
+            <button type="button" id="modeTable" class="mode-btn is-active" aria-pressed="true">
+              Einzelwerte · 12 Stäbe
+            </button>
+            <button type="button" id="modeMeans" class="mode-btn" aria-pressed="false">
+              Schnell · Mittelwerte
+            </button>
+          </div>
+
+          <section id="tableMode">
+            <div class="form-head">
+              <h2>Stablängen [m]</h2>
+              <div class="form-actions">
+                <button type="button" id="fillKgButton" class="ghost-button">
+                  KG-Rest = 2,0
+                </button>
+                <button type="button" id="exampleButton" class="ghost-button">
+                  Beispiel
+                </button>
+              </div>
             </div>
+
+            <p class="table-hint">
+              <strong>EG</strong> = Tiefe am Ende des Eilgangs,
+              <strong>KG</strong> = Endtiefe nach dem Kraftgang. Je Stab gilt
+              0 ≤ EG ≤ KG ≤ 2 m. Mit Enter/Return springen Sie zum nächsten Feld.
+            </p>
+
+            <div class="table-scroll">
+              <table class="rod-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Stab</th>
+                    <th scope="col">Eilgang (EG)<span class="col-unit">m</span></th>
+                    <th scope="col">Kraftgang (KG)<span class="col-unit">m</span></th>
+                  </tr>
+                </thead>
+                <tbody id="rodRows"></tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row">Summe</th>
+                    <td id="sumEG" class="numeric">–</td>
+                    <td id="sumKG" class="numeric">–</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Mittelwert</th>
+                    <td id="meanEG" class="numeric strong">–</td>
+                    <td id="meanKG" class="numeric strong">–</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+
+          <section id="meansMode" hidden>
+            <div class="form-head">
+              <h2>Mittelwerte [m]</h2>
+            </div>
+            <p class="table-hint">
+              Mittlere Stablängen direkt eintragen – für eine schnelle
+              Kontrolle ohne alle 12 Einzelwerte. Es gilt 0 ≤ EG ≤ KG ≤ 2 m.
+            </p>
+            <div class="means-grid">
+              <label>
+                Mittelwert EG<span class="col-unit">m</span>
+                <input type="text" inputmode="decimal" id="meanEgInput"
+                  enterkeyhint="next" placeholder="0,00"
+                  aria-label="Mittelwert Eilgang in Metern" />
+              </label>
+              <label>
+                Mittelwert KG<span class="col-unit">m</span>
+                <input type="text" inputmode="decimal" id="meanKgInput"
+                  enterkeyhint="done" placeholder="2,00"
+                  aria-label="Mittelwert Kraftgang in Metern" />
+              </label>
+            </div>
+          </section>
+
+          <div class="form-footer">
+            <button type="submit" id="calculateButton" class="primary-button">
+              Bruchlast berechnen
+            </button>
+            <button type="button" id="resetButton" class="ghost-button">
+              Zurücksetzen
+            </button>
           </div>
-
-          <p class="table-hint">
-            Je Stab die im Eilgang und Kraftgang eingedrehte Länge eintragen.
-            EG + KG darf die Stablänge von 2 m nicht überschreiten.
-          </p>
-
-          <div class="table-scroll">
-            <table class="rod-table">
-              <thead>
-                <tr>
-                  <th scope="col">Stab</th>
-                  <th scope="col">Eilgang (EG)</th>
-                  <th scope="col">Kraftgang (KG)</th>
-                </tr>
-              </thead>
-              <tbody id="rodRows"></tbody>
-              <tfoot>
-                <tr>
-                  <th scope="row">Summe</th>
-                  <td id="sumEG" class="numeric">–</td>
-                  <td id="sumKG" class="numeric">–</td>
-                </tr>
-                <tr>
-                  <th scope="row">Mittelwert</th>
-                  <td id="meanEG" class="numeric strong">–</td>
-                  <td id="meanKG" class="numeric strong">–</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <button type="submit" id="calculateButton" class="primary-button">
-            Bruchlast berechnen
-          </button>
         </form>
 
         <section class="panel result-panel" aria-live="polite">

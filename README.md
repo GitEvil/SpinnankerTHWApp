@@ -7,15 +7,25 @@ Mittelwerte und Bruchlast werden per Knopfdruck berechnet.
 
 ## Bedienung
 
-1. Für jeden der 12 Stäbe die im **Eilgang (EG)** und im **Kraftgang (KG)**
-   eingedrehte Länge eintragen (in Metern, Komma oder Punkt). Beide Werte sind
-   Abschnitte desselben 2-m-Stabes, daher gilt je Stab **EG + KG ≤ 2 m**.
+1. Für jeden der 12 Stäbe zwei Tiefen eintragen (in Metern, Komma oder Punkt):
+   - **EG** = Tiefe am Ende des **Eilgangs**
+   - **KG** = **Endtiefe** insgesamt nach dem **Kraftgang**
+
+   Da der Kraftgang den Stab tiefer eindreht, gilt je Stab
+   **0 ≤ EG ≤ KG ≤ 2 m**.
 2. Summe und Mittelwert werden live unter der Tabelle angezeigt.
 3. Auf **„Bruchlast berechnen“** drücken – das Ergebnis erscheint als
    vertikale (V) und horizontale (H) Bruchlast in kN.
 
-Über die Schaltfläche **Beispiel** wird das dokumentierte Beispiel (Bild 24)
-geladen: Mittel EG 1,36 m, Mittel KG 0,64 m (Gesamtlänge 2,00 m).
+Hilfen zur schnelleren Eingabe: **Enter/Return** springt zum nächsten Feld,
+**„KG-Rest = 2,0“** füllt leere KG-Felder mit der vollen Stablänge. Über
+**Beispiel** wird Beispiel 1 aus dem Handbuch geladen (Mittel EG 0,60 m,
+KG 1,86 m → 36 kN).
+
+Über die Umschaltung **„Schnell · Mittelwerte“** können statt der 12
+Einzelwerte direkt die beiden Mittelwerte (EG und KG) eingegeben werden – für
+eine schnelle Kontrolle ohne vollständiges Protokoll. Das Ergebnis ist
+identisch zur Tabelleneingabe mit denselben Mittelwerten.
 
 ## Rechenmodell
 
@@ -30,17 +40,21 @@ dem Originaldiagramm ausgemessen (kN je Meter Stablänge):
 | KG-V  | 24,5     | 49 kN        |
 | KG-H  | 13,6     | 27 kN        |
 
-Die grafische Ablesekonstruktion (Parallele zur KG-Kurve, Bild 24) entspricht
-der Formel:
+Die grafische Ablesekonstruktion (Parallele zur KG-Kurve, Handbuch Abschnitt
+4.7, Bild 22/24) entspricht der Formel:
 
 ```
-Bruchlast = Steigung_EG · MittelEG + Steigung_KG · MittelKG
+Bruchlast = Steigung_EG · MittelEG + Steigung_KG · (MittelKG − MittelEG)
 ```
 
-Dabei sind `MittelEG` und `MittelKG` die Mittelwerte der im jeweiligen Gang
-eingedrehten Längen. Kontrolle am dokumentierten Beispiel
-(EG 1,36 m + KG 0,64 m = 2,00 m Gesamtlänge): vertikal 27,9 kN – deckt sich mit
-den im Diagramm abgelesenen ~27 kN.
+`MittelEG`/`MittelKG` sind die Mittelwerte der EG- bzw. KG-Tiefen. Das Ergebnis
+wird konservativ auf ganze kN abgerundet (entspricht dem Ablesen im Diagramm).
+Damit werden beide Handbuch-Beispiele exakt reproduziert:
+
+| Beispiel | Mittel EG | Mittel KG | App / Handbuch (vertikal) |
+| -------- | --------- | --------- | ------------------------- |
+| 1        | 0,60 m    | 1,86 m    | 36 kN                     |
+| 2        | 1,36 m    | 2,00 m    | 27 kN                     |
 
 **Geltungsbereich:** Spinnanker Type XII, Mindest-Einbaulänge 2 m,
 Bodenklasse 4, Ein-/Ausdrehmaschine 1400 HTC. Das Ergebnis ersetzt keine
